@@ -161,6 +161,7 @@ header h1 {
     position: absolute;
     top: 15px;
     right: 20px;
+    margin-bottom: 100px;
 }
 
 #user-info {
@@ -180,4 +181,34 @@ header h1 {
 .logged-out #myTab,
 .logged-out #myTabContent {
     display: none;
+}
+
+/* === PHẦN SỬA LỖI HIỂN THỊ TRÊN ĐIỆN THOẠI === */
+
+/* Áp dụng cho màn hình có chiều rộng từ 576px trở xuống (điện thoại) */
+@media (max-width: 576px) {
+    header {
+        /* Cần set relative để auth-container định vị lại */
+        position: relative;
+        /* Thêm khoảng trống ở trên để không bị sát mép */
+        padding-top: 50px; 
+    }
+
+    #auth-container {
+        /* Bỏ định vị tuyệt đối */
+        position: static;
+        /* Dàn trải ra để căn giữa */
+        display: flex;
+        justify-content: center;
+        /* Đặt nó ở trên cùng của header */
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+    }
+
+    header h1 {
+        /* Giảm kích thước chữ một chút cho vừa màn hình */
+        font-size: 1.8rem;
+    }
 }
