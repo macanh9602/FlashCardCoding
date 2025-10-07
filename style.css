@@ -89,7 +89,8 @@ header h1 {
     background-color: transparent;
     border: none;
     perspective: 1500px;
-    min-height: 300px; /* Tăng chiều cao thẻ */
+    min-height: 300px;
+    /* Tăng chiều cao thẻ */
     margin-top: px;
 }
 
@@ -102,8 +103,10 @@ header h1 {
     min-height: inherit;
     transition: transform 0.6s;
     transform-style: preserve-3d;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Đổ bóng đậm hơn */
-    border-radius: 12px; /* Bo tròn góc nhiều hơn */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    /* Đổ bóng đậm hơn */
+    border-radius: 12px;
+    /* Bo tròn góc nhiều hơn */
 }
 
 /* Class .is-flipped sẽ được thêm bằng JS để kích hoạt hiệu ứng lật */
@@ -124,7 +127,8 @@ header h1 {
     align-items: center;
     justify-content: center;
     padding: 25px;
-    background-color: #ffffff; /* Nền trắng tinh */
+    background-color: #ffffff;
+    /* Nền trắng tinh */
     border-radius: 12px;
     border: 1px solid #e9ecef;
 }
@@ -136,24 +140,55 @@ header h1 {
 
 /* Kiểu chữ cho mặt trước */
 #quiz-front {
-    font-size: 3rem; /* Tăng kích thước chữ chính */
-    font-weight: 700; /* Đậm hơn */
-    color: #2c3e50; /* Màu xanh đen */
+    font-size: 3rem;
+    /* Tăng kích thước chữ chính */
+    font-weight: 700;
+    /* Đậm hơn */
+    color: #2c3e50;
+    /* Màu xanh đen */
     margin-bottom: 0.5rem;
 }
 
 #quiz-ipa {
-    font-size: 1.25rem; /* Tăng kích thước phiên âm */
-    color: #7f8c8d; /* Màu xám nhạt */
+    font-size: 1.25rem;
+    /* Tăng kích thước phiên âm */
+    color: #7f8c8d;
+    /* Màu xám nhạt */
 }
 
 /* Kiểu chữ cho mặt sau */
 #quiz-back {
-    font-size: 1.2rem; /* Kích thước chữ vừa phải, dễ đọc */
-    color: #34495e; /* Màu xám đậm */
-    text-align: left;
-    width: 100%;
-    white-space: pre-wrap; /* Giữ nguyên các ký tự xuống dòng */
+    /* Căn giữa nội dung */
+    text-align: center;
+
+    /* Tăng kích thước chữ cho dễ đọc */
+    font-size: 1.5rem;
+
+    /* Tăng độ đậm của chữ */
+    font-weight: 500;
+
+    /* Giữ màu xám đậm cho dịu mắt */
+    color: #34495e;
+
+    /* Giữ nguyên các ký tự xuống dòng */
+    white-space: pre-wrap;
+}
+
+#quiz-front {
+    /* Căn giữa nội dung */
+    text-align: center;
+
+    /* Tăng kích thước chữ cho dễ đọc */
+    font-size: 1.5rem;
+
+    /* Tăng độ đậm của chữ */
+    font-weight: 500;
+
+    /* Giữ màu xám đậm cho dịu mắt */
+    color: #34495e;
+
+    /* Giữ nguyên các ký tự xuống dòng */
+    white-space: pre-wrap;
 }
 
 /* === PHẦN CSS CHO KHU VỰC ĐĂNG NHẬP === */
@@ -173,7 +208,8 @@ header h1 {
 .profile-pic {
     width: 40px;
     height: 40px;
-    border-radius: 50%; /* Bo tròn ảnh đại diện */
+    border-radius: 50%;
+    /* Bo tròn ảnh đại diện */
     border: 2px solid #ddd;
 }
 
@@ -191,7 +227,7 @@ header h1 {
         /* Cần set relative để auth-container định vị lại */
         position: relative;
         /* Thêm khoảng trống ở trên để không bị sát mép */
-        padding-top: 50px; 
+        padding-top: 50px;
     }
 
     #auth-container {

@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeDeck = 'all';
     let unsubscribeDecks = null;
     let unsubscribeCards = null;
+    let currentQuiz = [];
+    let currentCardIndex = 0;
 
     // --- FIREBASE INITIALIZATION & REFS ---
     firebase.initializeApp(firebaseConfig);
@@ -16,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DOM ELEMENTS ---
     const authContainer = document.getElementById('auth-container');
-    // ... (Toàn bộ các DOM elements cũ cho trang chính giữ nguyên) ...
     const deckListDiv = document.getElementById('deck-list');
     const newDeckInput = document.getElementById('new-deck-input');
     const addDeckBtn = document.getElementById('add-deck-btn');
@@ -61,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- AUTH STATE OBSERVER ---
     auth.onAuthStateChanged(user => {
         if (user) {
-            // Người dùng đã đăng nhập -> Hiển thị thông tin và tải dữ liệu
             currentUser = user;
             decksRef = db.collection('users').doc(user.uid).collection('decks');
             cardsRef = db.collection('users').doc(user.uid).collection('cards');
@@ -75,29 +75,30 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             authContainer.querySelector('#logout-btn').addEventListener('click', signOut);
 
+            document.body.classList.remove('logged-out');
             loadDataFromFirestore();
-
         } else {
-            // Người dùng CHƯA đăng nhập -> Đẩy về trang login
-            console.log("Chưa đăng nhập, chuyển hướng về login.html");
+            currentUser = null;
             window.location.href = 'login.html';
         }
     });
     
-    // --- Toàn bộ các hàm xử lý dữ liệu và giao diện khác giữ nguyên như cũ ---
-    // ... (loadDataFromFirestore, clearUI, renderUI, event listeners...)
+    // --- FIRESTORE DATA FUNCTIONS ---
     const loadDataFromFirestore = () => {
         if (unsubscribeDecks) unsubscribeDecks();
         if (unsubscribeCards) unsubscribeCards();
+
         unsubscribeDecks = decksRef.orderBy('name').onSnapshot(snapshot => {
             decks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderUI();
         }, error => console.error("Lỗi khi tải decks:", error));
+
         unsubscribeCards = cardsRef.onSnapshot(snapshot => {
             cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderUI();
         }, error => console.error("Lỗi khi tải cards:", error));
     };
+
     const clearUI = () => {
         if (unsubscribeDecks) unsubscribeDecks();
         if (unsubscribeCards) unsubscribeCards();
@@ -106,11 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
         activeDeck = 'all';
         renderUI();
     };
+
+    // --- UI RENDERING ---
     const renderUI = () => {
         renderDecks();
         displayCardsByDeck(activeDeck);
         populateDeckDropdowns();
     };
+
     const renderDecks = () => {
         deckListDiv.innerHTML = `<div class="col-md-4 col-sm-6"><div class="card deck-card text-center h-100 ${activeDeck === 'all' ? 'active' : ''}" data-deck="all"><div class="card-body"><h5 class="card-title">Tất cả thẻ</h5><p class="card-text text-muted">${cards.length} thẻ</p></div></div></div>`;
         decks.forEach(deck => {
@@ -118,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deckListDiv.innerHTML += `<div class="col-md-4 col-sm-6"><div class="card deck-card text-center h-100 ${activeDeck === deck.name ? 'active' : ''}" data-deck="${deck.name}"><button class="btn delete-deck-btn" data-id="${deck.id}" data-deck-name="${deck.name}"><i class="bi bi-x-circle"></i></button><div class="card-body"><h5 class="card-title">${deck.name}</h5><p class="card-text text-muted">${cardCount} thẻ</p></div></div></div>`;
         });
     };
+
     const displayCardsByDeck = (deckName) => {
         activeDeck = deckName;
         cardsListTitle.innerText = deckName === 'all' ? 'Tất cả thẻ' : `Thẻ trong bộ: ${deckName}`;
@@ -128,9 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         filteredCards.forEach(card => {
-            cardsListDiv.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${card.front}</span><div class="card-item-actions"><button class="btn btn-sm btn-outline-info info-btn" data-word="${card.front}"><i class="bi bi-info-circle"></i></button><button class="btn btn-sm btn-outline-secondary edit-btn" data-id="${card.id}"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" data-id="${card.id}"><i class="bi bi-trash"></i></button></div></div>`;
+            cardsListDiv.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${card.front}</span><div class="card-item-actions"><button class="btn btn-sm btn-outline-info info-btn" data-word="${card.front}" data-id="${card.id}"><i class="bi bi-info-circle"></i></button><button class="btn btn-sm btn-outline-secondary edit-btn" data-id="${card.id}"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" data-id="${card.id}"><i class="bi bi-trash"></i></button></div></div>`;
         });
     };
+    
     const populateDeckDropdowns = () => {
         const deckNames = decks.map(d => d.name);
         if (deckNames.length === 0) deckNames.push('Mặc định');
@@ -144,6 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
             quizDeckFilter.innerHTML += option;
         });
     };
+
+    // --- EVENT LISTENERS (CRUD) ---
     addDeckBtn.addEventListener('click', () => {
         const newDeckName = newDeckInput.value.trim();
         if (newDeckName && !decks.some(d => d.name === newDeckName)) {
@@ -152,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(error => console.error("Lỗi khi thêm bộ thẻ:", error));
         } else alert('Tên bộ thẻ không hợp lệ hoặc đã tồn tại!');
     });
+
     deckListDiv.addEventListener('click', (e) => {
         const deckCard = e.target.closest('.deck-card');
         const deleteBtn = e.target.closest('.delete-deck-btn');
@@ -159,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             const deckIdToDelete = deleteBtn.dataset.id;
             const deckNameToDelete = deleteBtn.dataset.deckName;
-            if (confirm(`Bạn có chắc muốn xóa bộ thẻ "${deckNameToDelete}"? (Các thẻ bên trong sẽ không bị xóa, bạn có thể chuyển chúng sang bộ khác sau)`)) {
+            if (confirm(`Bạn có chắc muốn xóa bộ thẻ "${deckNameToDelete}"? (Các thẻ bên trong sẽ không bị xóa)`)) {
                 decksRef.doc(deckIdToDelete).delete().catch(error => console.error("Lỗi xóa bộ thẻ:", error));
             }
         } else if (deckCard) {
@@ -168,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayCardsByDeck(deckCard.dataset.deck);
         }
     });
+
     saveCardBtn.addEventListener('click', () => {
         if (!deckSelect.value) {
             alert("Vui lòng tạo một bộ thẻ trước khi thêm thẻ mới!");
@@ -189,10 +199,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(error => console.error("Lỗi thêm thẻ:", error));
         } else alert('Vui lòng điền đầy đủ thông tin!');
     });
+
     cardsListDiv.addEventListener('click', (e) => {
         const target = e.target.closest('button');
         if (!target) return;
         const cardId = target.dataset.id;
+
         if (target.classList.contains('edit-btn')) {
             const cardToEdit = cards.find(c => c.id === cardId);
             if (cardToEdit) {
@@ -209,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
     saveEditBtn.addEventListener('click', () => {
         const id = editCardId.value;
         const updatedData = {
@@ -221,4 +234,101 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(() => editModal.hide())
             .catch(error => console.error("Lỗi cập nhật thẻ:", error));
     });
+
+    // --- LOGIC CHO INFO MODAL, SPEAK, FETCH ---
+    // (Giữ nguyên, không thay đổi)
+    
+    // --- QUIZ LOGIC ---
+    const startQuiz = () => {
+        const selectedDeck = quizDeckFilter.value;
+        const selectedStatuses = [...document.querySelectorAll('.status-filter:checked')].map(el => el.value);
+
+        if (selectedStatuses.length === 0) {
+            alert('Bạn phải chọn ít nhất một trạng thái để ôn tập!');
+            return;
+        }
+
+        let filteredCards = cards;
+        if (selectedDeck !== 'all') {
+            filteredCards = cards.filter(card => card.deck === selectedDeck);
+        }
+        
+        let quizCards = filteredCards.filter(card => selectedStatuses.includes(card.status));
+        quizCards.sort(() => Math.random() - 0.5);
+        currentQuiz = quizCards;
+
+        if (currentQuiz.length === 0) {
+            alert('Không có thẻ nào phù hợp với lựa chọn của bạn.');
+            return;
+        }
+
+        currentCardIndex = 0;
+        quizSetupDiv.classList.add('hidden');
+        quizViewDiv.classList.remove('hidden');
+        showNextCard();
+    };
+
+    const endQuiz = () => {
+        quizSetupDiv.classList.remove('hidden');
+        quizViewDiv.classList.add('hidden');
+        // không cần renderUI() vì onSnapshot sẽ tự động cập nhật
+    };
+
+    const showNextCard = () => {
+        quizCard.classList.remove('is-flipped');
+        setTimeout(() => {
+            const card = currentQuiz[currentCardIndex];
+            const direction = quizDirectionSelect.value;
+            if (direction === 'front-to-back') {
+                quizFront.textContent = card.front;
+                quizBack.textContent = card.back;
+            } else {
+                quizFront.textContent = card.back;
+                quizBack.textContent = card.front;
+            }
+            quizIpa.textContent = card.ipa || '';
+            quizProgress.textContent = `Thẻ ${currentCardIndex + 1} / ${currentQuiz.length}`;
+            statusButtonsDiv.classList.add('hidden');
+        }, 300);
+    };
+
+    const flipCardAction = () => {
+        if (quizViewDiv.classList.contains('hidden')) return;
+        quizCard.classList.toggle('is-flipped');
+        statusButtonsDiv.classList.toggle('hidden');
+    }
+
+    statusButtonsDiv.addEventListener('click', (e) => {
+        if (e.target.classList.contains('status-btn')) {
+            const newStatus = e.target.dataset.status;
+            const currentCardInQuiz = currentQuiz[currentCardIndex];
+            
+            // Cập nhật trạng thái thẳng lên Firestore
+            cardsRef.doc(currentCardInQuiz.id).update({ status: newStatus })
+                .catch(error => console.error("Lỗi cập nhật trạng thái thẻ:", error));
+            
+            currentCardIndex++;
+            if (currentCardIndex < currentQuiz.length) {
+                showNextCard();
+            } else {
+                alert('Bạn đã hoàn thành phiên ôn tập!');
+                endQuiz();
+            }
+        }
+    });
+
+    startQuizBtn.addEventListener('click', startQuiz);
+    endQuizBtn.addEventListener('click', endQuiz);
+    quizCard.addEventListener('click', flipCardAction);
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !quizViewDiv.classList.contains('hidden')) {
+            e.preventDefault();
+            flipCardAction();
+        }
+    });
+    ttsUSBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(quizFront.textContent, 'en-US') });
+    ttsUKBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(quizFront.textContent, 'en-GB') });
+    
+    // --- INITIALIZATION ---
+    // (Không cần gọi hàm nào ở đây vì onAuthStateChanged sẽ xử lý tất cả)
 });
