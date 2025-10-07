@@ -107,6 +107,35 @@ document.addEventListener('DOMContentLoaded', () => {
         activeDeck = 'all';
         renderUI();
     };
+    
+    // --- API & SPEAK FUNCTIONS ---
+    const fetchWordDefinition = async (word) => {
+        try {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+            if (!response.ok) {
+                console.error('Không tìm thấy từ này trong từ điển.');
+                return null;
+            }
+            const data = await response.json();
+            return data[0];
+        } catch (error) {
+            console.error('Lỗi API:', error);
+            alert('Có lỗi xảy ra khi kết nối tới API từ điển.');
+            return null;
+        }
+    };
+    
+    const speak = (text, lang) => {
+        if (!text || typeof window.speechSynthesis === 'undefined') {
+            alert("Trình duyệt của bạn không hỗ trợ chức năng này.");
+            return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    };
 
     // --- UI RENDERING ---
     const renderUI = () => {
@@ -133,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         filteredCards.forEach(card => {
-            cardsListDiv.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${card.front}</span><div class="card-item-actions"><button class="btn btn-sm btn-outline-info info-btn" data-word="${card.front}" data-id="${card.id}"><i class="bi bi-info-circle"></i></button><button class="btn btn-sm btn-outline-secondary edit-btn" data-id="${card.id}"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" data-id="${card.id}"><i class="bi bi-trash"></i></button></div></div>`;
+            cardsListDiv.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${card.front}</span><div class="card-item-actions"><button class="btn btn-sm btn-outline-info info-btn" data-word="${card.front}"><i class="bi bi-info-circle"></i></button><button class="btn btn-sm btn-outline-secondary edit-btn" data-id="${card.id}"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" data-id="${card.id}"><i class="bi bi-trash"></i></button></div></div>`;
         });
     };
     
@@ -200,12 +229,36 @@ document.addEventListener('DOMContentLoaded', () => {
         } else alert('Vui lòng điền đầy đủ thông tin!');
     });
 
-    cardsListDiv.addEventListener('click', (e) => {
+    cardsListDiv.addEventListener('click', async (e) => {
         const target = e.target.closest('button');
         if (!target) return;
         const cardId = target.dataset.id;
-
-        if (target.classList.contains('edit-btn')) {
+        
+        // === PHẦN LOGIC NÚT INFO ĐƯỢC THÊM LẠI ===
+        if (target.classList.contains('info-btn')) {
+            const word = target.dataset.word;
+            infoModalTitle.textContent = word;
+            infoModalBody.innerHTML = '<p class="text-center">Đang tải...</p>';
+            infoModal.show();
+            const data = await fetchWordDefinition(word);
+            if (data) {
+                let html = `<p><strong>Phiên âm:</strong> ${data.phonetic || (data.phonetics.find(p => p.text)?.text || 'N/A')} <span class="badge bg-secondary" onclick="speak('${word}', 'en-US')">🔊 US</span> <span class="badge bg-secondary" onclick="speak('${word}', 'en-GB')">🔊 UK</span></p>`;
+                data.meanings.forEach(meaning => {
+                    html += `<h6><em>${meaning.partOfSpeech}</em></h6>`;
+                    meaning.definitions.forEach((def, index) => {
+                        html += `<p><b>${index + 1}.</b> ${def.definition}</p>${def.example ? `<p class="text-muted fst-italic">"${def.example}"</p>` : ''}`;
+                    });
+                    if (meaning.synonyms?.length > 0) html += `<p><strong>Từ đồng nghĩa:</strong> ${meaning.synonyms.join(', ')}</p>`;
+                    if (meaning.antonyms?.length > 0) html += `<p><strong>Từ trái nghĩa:</strong> ${meaning.antonyms.join(', ')}</p>`;
+                });
+                infoModalBody.innerHTML = html;
+            } else {
+                infoModalBody.innerHTML = '<p class="text-center text-danger">Không thể tải thông tin cho từ này.</p>';
+            }
+        } 
+        // === KẾT THÚC PHẦN THÊM LẠI ===
+        
+        else if (target.classList.contains('edit-btn')) {
             const cardToEdit = cards.find(c => c.id === cardId);
             if (cardToEdit) {
                 editCardId.value = cardToEdit.id;
@@ -235,33 +288,38 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Lỗi cập nhật thẻ:", error));
     });
 
-    // --- LOGIC CHO INFO MODAL, SPEAK, FETCH ---
-    // (Giữ nguyên, không thay đổi)
+    fetchInfoBtn.addEventListener('click', async () => {
+        const word = frontInput.value.trim();
+        if (!word) return;
+        const data = await fetchWordDefinition(word);
+        if (data) {
+            ipaInput.value = data.phonetic || (data.phonetics.find(p => p.text)?.text || '');
+            const firstMeaning = data.meanings[0]?.definitions[0]?.definition || 'Không có định nghĩa.';
+            backInput.value = `(Eng) ${firstMeaning}\n\n(Vie) `;
+        } else {
+            alert('Không tìm thấy thông tin cho từ này.');
+        }
+    });
     
     // --- QUIZ LOGIC ---
     const startQuiz = () => {
         const selectedDeck = quizDeckFilter.value;
         const selectedStatuses = [...document.querySelectorAll('.status-filter:checked')].map(el => el.value);
-
         if (selectedStatuses.length === 0) {
             alert('Bạn phải chọn ít nhất một trạng thái để ôn tập!');
             return;
         }
-
         let filteredCards = cards;
         if (selectedDeck !== 'all') {
             filteredCards = cards.filter(card => card.deck === selectedDeck);
         }
-        
         let quizCards = filteredCards.filter(card => selectedStatuses.includes(card.status));
         quizCards.sort(() => Math.random() - 0.5);
         currentQuiz = quizCards;
-
         if (currentQuiz.length === 0) {
             alert('Không có thẻ nào phù hợp với lựa chọn của bạn.');
             return;
         }
-
         currentCardIndex = 0;
         quizSetupDiv.classList.add('hidden');
         quizViewDiv.classList.remove('hidden');
@@ -271,7 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const endQuiz = () => {
         quizSetupDiv.classList.remove('hidden');
         quizViewDiv.classList.add('hidden');
-        // không cần renderUI() vì onSnapshot sẽ tự động cập nhật
     };
 
     const showNextCard = () => {
@@ -302,11 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.classList.contains('status-btn')) {
             const newStatus = e.target.dataset.status;
             const currentCardInQuiz = currentQuiz[currentCardIndex];
-            
-            // Cập nhật trạng thái thẳng lên Firestore
             cardsRef.doc(currentCardInQuiz.id).update({ status: newStatus })
                 .catch(error => console.error("Lỗi cập nhật trạng thái thẻ:", error));
-            
             currentCardIndex++;
             if (currentCardIndex < currentQuiz.length) {
                 showNextCard();
@@ -330,5 +384,5 @@ document.addEventListener('DOMContentLoaded', () => {
     ttsUKBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(quizFront.textContent, 'en-GB') });
     
     // --- INITIALIZATION ---
-    // (Không cần gọi hàm nào ở đây vì onAuthStateChanged sẽ xử lý tất cả)
+    window.speak = speak; // Đưa hàm speak ra global scope để onclick trong modal có thể gọi
 });
