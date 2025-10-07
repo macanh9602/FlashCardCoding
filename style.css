@@ -155,3 +155,29 @@ header h1 {
     width: 100%;
     white-space: pre-wrap; /* Giữ nguyên các ký tự xuống dòng */
 }
+
+/* === PHẦN CSS CHO KHU VỰC ĐĂNG NHẬP === */
+#auth-container {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+}
+
+#user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Bo tròn ảnh đại diện */
+    border: 2px solid #ddd;
+}
+
+/* Thêm vào cuối file style.css */
+.logged-out #myTab,
+.logged-out #myTabContent {
+    display: none;
+}
