@@ -26,9 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const deckSelect = document.getElementById('deck-select');
     const frontInput = document.getElementById('front-input');
     const backInput = document.getElementById('back-input');
-    const ipaInput = document.getElementById('ipa-input');
-    const fetchInfoBtn = document.getElementById('fetch-info-btn');
-    const saveCardBtn = document.getElementById('save-card-btn');
     const infoModal = new bootstrap.Modal(document.getElementById('info-modal'));
     const infoModalTitle = document.getElementById('info-modal-title');
     const infoModalBody = document.getElementById('info-modal-body');
@@ -37,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const editCardId = document.getElementById('edit-card-id');
     const editDeckSelect = document.getElementById('edit-deck-select');
     const editFrontInput = document.getElementById('edit-front-input');
-    const editIpaInput = document.getElementById('edit-ipa-input');
     const editBackInput = document.getElementById('edit-back-input');
     const quizSetupDiv = document.getElementById('quiz-setup');
     const quizViewDiv = document.getElementById('quiz-view');
@@ -65,16 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = user;
             decksRef = db.collection('users').doc(user.uid).collection('decks');
             cardsRef = db.collection('users').doc(user.uid).collection('cards');
-            
-            authContainer.innerHTML = `
-                <div id="user-info">
-                    <img src="${user.photoURL}" alt="${user.displayName}" class="profile-pic">
-                    <span>Chào, ${user.displayName.split(' ')[0]}</span>
-                    <button id="logout-btn" class="btn btn-sm btn-outline-secondary">Đăng xuất</button>
-                </div>
-            `;
+            authContainer.innerHTML = `<div id="user-info"><img src="${user.photoURL}" alt="${user.displayName}" class="profile-pic"><span>Chào, ${user.displayName.split(' ')[0]}</span><button id="logout-btn" class="btn btn-sm btn-outline-secondary">Đăng xuất</button></div>`;
             authContainer.querySelector('#logout-btn').addEventListener('click', signOut);
-
             document.body.classList.remove('logged-out');
             loadDataFromFirestore();
         } else {
@@ -82,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'login.html';
         }
     });
-    
+
     // --- FIRESTORE DATA FUNCTIONS ---
     const loadDataFromFirestore = () => {
         if (unsubscribeDecks) unsubscribeDecks();
@@ -107,8 +95,18 @@ document.addEventListener('DOMContentLoaded', () => {
         activeDeck = 'all';
         renderUI();
     };
-    
+
     // --- API & SPEAK FUNCTIONS ---
+    const speak = (text, lang) => {
+        if (!text || typeof window.speechSynthesis === 'undefined') return alert("Trình duyệt của bạn không hỗ trợ chức năng này.");
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    };
+
+        // --- API & SPEAK FUNCTIONS ---
     const fetchWordDefinition = async (word) => {
         try {
             const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -125,18 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    const speak = (text, lang) => {
-        if (!text || typeof window.speechSynthesis === 'undefined') {
-            alert("Trình duyệt của bạn không hỗ trợ chức năng này.");
-            return;
-        }
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-    };
-
     // --- UI RENDERING ---
     const renderUI = () => {
         renderDecks();
@@ -165,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cardsListDiv.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${card.front}</span><div class="card-item-actions"><button class="btn btn-sm btn-outline-info info-btn" data-word="${card.front}"><i class="bi bi-info-circle"></i></button><button class="btn btn-sm btn-outline-secondary edit-btn" data-id="${card.id}"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" data-id="${card.id}"><i class="bi bi-trash"></i></button></div></div>`;
         });
     };
-    
+
     const populateDeckDropdowns = () => {
         const deckNames = decks.map(d => d.name);
         if (deckNames.length === 0) deckNames.push('Mặc định');
@@ -207,34 +193,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    saveCardBtn.addEventListener('click', () => {
-        if (!deckSelect.value) {
-            alert("Vui lòng tạo một bộ thẻ trước khi thêm thẻ mới!");
-            return;
-        }
-        const card = {
-            front: frontInput.value.trim(),
-            back: backInput.value.trim(),
-            ipa: ipaInput.value.trim(),
-            deck: deckSelect.value,
-            status: 'chua-thuoc',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        if (card.front && card.back) {
-            cardsRef.add(card).then(() => {
-                activeDeck = card.deck;
-                document.getElementById('library-tab').click();
-                frontInput.value = backInput.value = ipaInput.value = '';
-            }).catch(error => console.error("Lỗi thêm thẻ:", error));
-        } else alert('Vui lòng điền đầy đủ thông tin!');
-    });
+    // Nút Lưu Thẻ không có trong file HTML, nhưng logic vẫn giữ lại phòng khi cần
+    const saveCardButton = document.getElementById('save-card-btn');
+    if (saveCardButton) {
+        saveCardButton.addEventListener('click', () => {
+            if (!deckSelect.value) return alert("Vui lòng tạo một bộ thẻ trước!");
+            const card = {
+                front: document.getElementById('front-input').value.trim(),
+                back: document.getElementById('back-input').value.trim(),
+                deck: deckSelect.value,
+                status: 'chua-thuoc',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if (card.front && card.back) {
+                cardsRef.add(card).then(() => {
+                    activeDeck = card.deck;
+                    document.getElementById('library-tab').click();
+                    document.getElementById('front-input').value = '';
+                    document.getElementById('back-input').value = '';
+                }).catch(error => console.error("Lỗi thêm thẻ:", error));
+            } else alert('Vui lòng điền đầy đủ thông tin!');
+        });
+    }
 
     cardsListDiv.addEventListener('click', async (e) => {
         const target = e.target.closest('button');
         if (!target) return;
         const cardId = target.dataset.id;
-        
-        // === PHẦN LOGIC NÚT INFO ĐƯỢC THÊM LẠI ===
+
         if (target.classList.contains('info-btn')) {
             const word = target.dataset.word;
             infoModalTitle.textContent = word;
@@ -255,16 +241,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 infoModalBody.innerHTML = '<p class="text-center text-danger">Không thể tải thông tin cho từ này.</p>';
             }
-        } 
-        // === KẾT THÚC PHẦN THÊM LẠI ===
-        
-        else if (target.classList.contains('edit-btn')) {
+        } else if (target.classList.contains('edit-btn')) {
             const cardToEdit = cards.find(c => c.id === cardId);
             if (cardToEdit) {
                 editCardId.value = cardToEdit.id;
                 editDeckSelect.value = cardToEdit.deck;
                 editFrontInput.value = cardToEdit.front;
-                editIpaInput.value = cardToEdit.ipa;
                 editBackInput.value = cardToEdit.back;
                 editModal.show();
             }
@@ -280,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const updatedData = {
             deck: editDeckSelect.value,
             front: editFrontInput.value.trim(),
-            ipa: editIpaInput.value.trim(),
             back: editBackInput.value.trim(),
         };
         cardsRef.doc(id).update(updatedData)
@@ -288,38 +269,22 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Lỗi cập nhật thẻ:", error));
     });
 
-    fetchInfoBtn.addEventListener('click', async () => {
-        const word = frontInput.value.trim();
-        if (!word) return;
-        const data = await fetchWordDefinition(word);
-        if (data) {
-            ipaInput.value = data.phonetic || (data.phonetics.find(p => p.text)?.text || '');
-            const firstMeaning = data.meanings[0]?.definitions[0]?.definition || 'Không có định nghĩa.';
-            backInput.value = `(Eng) ${firstMeaning}\n\n(Vie) `;
-        } else {
-            alert('Không tìm thấy thông tin cho từ này.');
-        }
-    });
-    
     // --- QUIZ LOGIC ---
     const startQuiz = () => {
         const selectedDeck = quizDeckFilter.value;
         const selectedStatuses = [...document.querySelectorAll('.status-filter:checked')].map(el => el.value);
-        if (selectedStatuses.length === 0) {
-            alert('Bạn phải chọn ít nhất một trạng thái để ôn tập!');
-            return;
-        }
+        if (selectedStatuses.length === 0) return alert('Bạn phải chọn ít nhất một trạng thái để ôn tập!');
+
         let filteredCards = cards;
         if (selectedDeck !== 'all') {
             filteredCards = cards.filter(card => card.deck === selectedDeck);
         }
-        let quizCards = filteredCards.filter(card => selectedStatuses.includes(card.status));
-        quizCards.sort(() => Math.random() - 0.5);
-        currentQuiz = quizCards;
-        if (currentQuiz.length === 0) {
-            alert('Không có thẻ nào phù hợp với lựa chọn của bạn.');
-            return;
-        }
+
+        currentQuiz = filteredCards.filter(card => selectedStatuses.includes(card.status));
+        currentQuiz.sort(() => Math.random() - 0.5);
+
+        if (currentQuiz.length === 0) return alert('Không có thẻ nào phù hợp với lựa chọn của bạn.');
+
         currentCardIndex = 0;
         quizSetupDiv.classList.add('hidden');
         quizViewDiv.classList.remove('hidden');
@@ -336,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             const card = currentQuiz[currentCardIndex];
             const direction = quizDirectionSelect.value;
+            // Dòng kiểm tra lỗi đã được xóa bỏ
             if (direction === 'front-to-back') {
                 quizFront.textContent = card.front;
                 quizBack.textContent = card.back;
@@ -361,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentCardInQuiz = currentQuiz[currentCardIndex];
             cardsRef.doc(currentCardInQuiz.id).update({ status: newStatus })
                 .catch(error => console.error("Lỗi cập nhật trạng thái thẻ:", error));
+
             currentCardIndex++;
             if (currentCardIndex < currentQuiz.length) {
                 showNextCard();
@@ -382,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     ttsUSBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(quizFront.textContent, 'en-US') });
     ttsUKBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(quizFront.textContent, 'en-GB') });
-    
+
     // --- INITIALIZATION ---
-    window.speak = speak; // Đưa hàm speak ra global scope để onclick trong modal có thể gọi
+    window.speak = speak;
 });

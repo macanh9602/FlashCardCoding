@@ -1,7 +1,6 @@
 /* === PHẦN 1: STYLE CHUNG & FONT MỚI === */
 body {
     background-color: #f8f9fa;
-    /* Áp dụng font Poppins cho toàn bộ trang */
     font-family: 'Poppins', sans-serif;
 }
 
@@ -82,39 +81,29 @@ header h1 {
     cursor: pointer;
 }
 
-/* === PHẦN 4: THIẾT KẾ LẠI THẺ QUIZ (QUAN TRỌNG) === */
-
-/* Bọc ngoài cùng, giữ nguyên phối cảnh 3D */
+/* === PHẦN 4: THIẾT KẾ LẠI THẺ QUIZ === */
 .quiz-card {
     background-color: transparent;
     border: none;
     perspective: 1500px;
     min-height: 300px;
-    /* Tăng chiều cao thẻ */
-    margin-top: px;
 }
 
-/* Thẻ bên trong, đây là đối tượng sẽ lật */
 .quiz-card-inner {
     position: relative;
     width: 100%;
     height: 100%;
-    /* ensure inner respects the parent's min-height so percentage height fills as expected */
     min-height: inherit;
     transition: transform 0.6s;
     transform-style: preserve-3d;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    /* Đổ bóng đậm hơn */
     border-radius: 12px;
-    /* Bo tròn góc nhiều hơn */
 }
 
-/* Class .is-flipped sẽ được thêm bằng JS để kích hoạt hiệu ứng lật */
 .quiz-card.is-flipped .quiz-card-inner {
     transform: rotateY(180deg);
 }
 
-/* Định dạng chung cho 2 mặt trước và sau */
 .quiz-card-front,
 .quiz-card-back {
     position: absolute;
@@ -128,75 +117,42 @@ header h1 {
     justify-content: center;
     padding: 25px;
     background-color: #ffffff;
-    /* Nền trắng tinh */
     border-radius: 12px;
     border: 1px solid #e9ecef;
 }
 
-/* Mặt sau sẽ được xoay ngược lại ban đầu */
 .quiz-card-back {
     transform: rotateY(180deg);
 }
 
-/* Kiểu chữ cho mặt trước */
+/* Kiểu chữ cho mặt trước (Đã sửa, chỉ giữ lại 1 khối) */
 #quiz-front {
     font-size: 3rem;
-    /* Tăng kích thước chữ chính */
     font-weight: 700;
-    /* Đậm hơn */
     color: #2c3e50;
-    /* Màu xanh đen */
     margin-bottom: 0.5rem;
+    text-align: center;
 }
 
 #quiz-ipa {
     font-size: 1.25rem;
-    /* Tăng kích thước phiên âm */
     color: #7f8c8d;
-    /* Màu xám nhạt */
 }
 
 /* Kiểu chữ cho mặt sau */
 #quiz-back {
-    /* Căn giữa nội dung */
     text-align: center;
-
-    /* Tăng kích thước chữ cho dễ đọc */
     font-size: 1.5rem;
-
-    /* Tăng độ đậm của chữ */
     font-weight: 500;
-
-    /* Giữ màu xám đậm cho dịu mắt */
     color: #34495e;
-
-    /* Giữ nguyên các ký tự xuống dòng */
     white-space: pre-wrap;
 }
 
-#quiz-front {
-    /* Căn giữa nội dung */
-    text-align: center;
-
-    /* Tăng kích thước chữ cho dễ đọc */
-    font-size: 1.5rem;
-
-    /* Tăng độ đậm của chữ */
-    font-weight: 500;
-
-    /* Giữ màu xám đậm cho dịu mắt */
-    color: #34495e;
-
-    /* Giữ nguyên các ký tự xuống dòng */
-    white-space: pre-wrap;
-}
-
-/* === PHẦN CSS CHO KHU VỰC ĐĂNG NHẬP === */
+/* === PHẦN 5: STYLE KHU VỰC ĐĂNG NHẬP & RESPONSIVE === */
 #auth-container {
     position: absolute;
     top: 15px;
     right: 20px;
-    margin-bottom: 100px;
 }
 
 #user-info {
@@ -209,42 +165,30 @@ header h1 {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    /* Bo tròn ảnh đại diện */
     border: 2px solid #ddd;
 }
 
-/* Thêm vào cuối file style.css */
 .logged-out #myTab,
 .logged-out #myTabContent {
     display: none;
 }
 
-/* === PHẦN SỬA LỖI HIỂN THỊ TRÊN ĐIỆN THOẠI === */
-
-/* Áp dụng cho màn hình có chiều rộng từ 576px trở xuống (điện thoại) */
 @media (max-width: 576px) {
     header {
-        /* Cần set relative để auth-container định vị lại */
         position: relative;
-        /* Thêm khoảng trống ở trên để không bị sát mép */
         padding-top: 50px;
     }
 
     #auth-container {
-        /* Bỏ định vị tuyệt đối */
-        position: static;
-        /* Dàn trải ra để căn giữa */
-        display: flex;
-        justify-content: center;
-        /* Đặt nó ở trên cùng của header */
         position: absolute;
         top: 15px;
         left: 0;
         right: 0;
+        display: flex;
+        justify-content: center;
     }
 
     header h1 {
-        /* Giảm kích thước chữ một chút cho vừa màn hình */
         font-size: 1.8rem;
     }
 }
