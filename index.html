@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flashcard Master</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="style.css">
@@ -72,7 +76,68 @@
             </div>
 
             <div class="tab-pane fade p-3" id="quiz-pane" role="tabpanel">
-                <p class="text-center text-muted">Chức năng Luyện tập sẽ được phát triển ở phiên bản sau.</p>
+                <div id="quiz-setup">
+                    <div class="section-box">
+                        <h3>Bắt đầu ôn tập</h3>
+                        <div class="setup-row mb-3">
+                            <label for="quiz-deck-filter" class="form-label">Chọn bộ thẻ:</label>
+                            <select id="quiz-deck-filter" class="form-select"></select>
+                        </div>
+                        <div class="setup-row mb-3">
+                            <label for="quiz-direction" class="form-label">Kiểm tra:</label>
+                            <select id="quiz-direction" class="form-select">
+                                <option value="front-to-back">Mặt trước ➤ Mặt sau</option>
+                                <option value="back-to-front">Mặt sau ➤ Mặt trước</option>
+                            </select>
+                        </div>
+                        <div class="setup-row statuses mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input status-filter" type="checkbox" value="chua-thuoc"
+                                    id="check-chua-thuoc" checked>
+                                <label class="form-check-label" for="check-chua-thuoc">Chưa thuộc</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input status-filter" type="checkbox" value="tam-on"
+                                    id="check-tam-on" checked>
+                                <label class="form-check-label" for="check-tam-on">Tạm ổn</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input status-filter" type="checkbox" value="da-thuoc"
+                                    id="check-da-thuoc">
+                                <label class="form-check-label" for="check-da-thuoc">Đã thuộc</label>
+                            </div>
+                        </div>
+                        <button id="start-quiz-btn" class="btn btn-primary btn-lg">🚀 Bắt đầu!</button>
+                    </div>
+                </div>
+                <div id="quiz-view" class="hidden">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <button id="end-quiz-btn" class="btn btn-sm btn-outline-secondary">Kết thúc</button>
+                        <h4 id="quiz-progress" class="mb-0"></h4>
+                    </div>
+                    <div class="quiz-card">
+                        <div class="quiz-card-inner">
+                            <div class="quiz-card-front">
+                                <div id="quiz-front" class="card-title"></div>
+                                <div id="quiz-ipa" class="card-subtitle text-muted"></div>
+                            </div>
+                            <div class="quiz-card-back">
+                                <div id="quiz-back" class="card-text"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="quiz-controls mt-3 text-center">
+                        <div id="tts-buttons" class="d-inline-block">
+                            <button id="tts-us-btn" class="btn btn-info">🔊 US</button>
+                            <button id="tts-uk-btn" class="btn btn-info">🔊 UK</button>
+                        </div>
+                    </div>
+                    <div id="status-buttons" class="mt-3 text-center hidden">
+                        <button class="btn btn-danger status-btn" data-status="chua-thuoc">🟥 Chưa thuộc</button>
+                        <button class="btn btn-warning status-btn" data-status="tam-on">🟨 Tạm ổn</button>
+                        <button class="btn btn-success status-btn" data-status="da-thuoc">🟩 Đã thuộc</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
