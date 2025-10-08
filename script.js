@@ -611,54 +611,130 @@ const populateDeckDropdowns = () => {
     let currentSynonymQuiz = [];
     let currentSynonymQuestionIndex = 0;
     let correctSynonymAnswer = '';
+    let currentSynonymQuizLevel = 'easy'; // Mặc định là dễ
+    const checkSynonymAnswerBtn = document.getElementById('check-synonym-answer-btn');
 
     const startSynonymQuiz = () => {
-        // Lấy danh sách các bộ thẻ đã được chọn từ checkboxes
         const selectedDecks = [...document.querySelectorAll('#synonym-deck-checkboxes .deck-filter-checkbox:checked')]
                                  .map(cb => cb.value);
 
         if (selectedDecks.length === 0) {
-            return alert('Bạn phải chọn ít nhất một bộ thẻ để ôn tập!');
+            return alert('You must select at least one deck to start the synonym quiz.');
         }
         
-        // Lọc các thẻ thuộc những bộ đã chọn
-        let potentialCards = cards.filter(card => selectedDecks.includes(card.deck));
+        // Đọc mức độ khó đã chọn
+        currentSynonymQuizLevel = document.querySelector('input[name="difficulty-level"]:checked').value;
 
-        // Chỉ lọc những thẻ có từ đồng nghĩa
+        // Lọc thẻ
+        let potentialCards = cards.filter(card => selectedDecks.includes(card.deck));
         currentSynonymQuiz = potentialCards.filter(card => card.synonyms && card.synonyms.length > 0);
-        currentSynonymQuiz.sort(() => Math.random() - 0.5); // Xáo trộn
+        
+        // Mức khó yêu cầu thẻ phải có ít nhất 2 từ đồng nghĩa để tạo câu hỏi thú vị
+        if (currentSynonymQuizLevel === 'hard') {
+            currentSynonymQuiz = currentSynonymQuiz.filter(card => card.synonyms.length >= 2);
+        }
+
+        currentSynonymQuiz.sort(() => Math.random() - 0.5);
 
         if (currentSynonymQuiz.length < 1) {
-            return alert('Không có thẻ nào có từ đồng nghĩa trong (các) bộ thẻ bạn chọn.');
+            return alert('No cards match the selected level and deck.');
         }
 
         currentSynonymQuestionIndex = 0;
         synonymQuizSetupDiv.classList.add('hidden');
         synonymQuizViewDiv.classList.remove('hidden');
-        displaySynonymQuestion();
+        
+        // Gọi hàm hiển thị câu hỏi tương ứng với mức độ
+        if (currentSynonymQuizLevel === 'easy') {
+            displaySynonymQuestion_Easy();
+        } else {
+            displaySynonymQuestion_Hard();
+        }
     };
 
-    const displaySynonymQuestion = () => {
-        // Reset
+    // const displaySynonymQuestion = () => {
+    //     // Reset
+    //     synonymOptionsContainer.innerHTML = '';
+    //     synonymFeedback.innerHTML = '';
+    //     nextSynonymQuestionBtn.classList.add('hidden');
+
+    //     const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
+    //     synonymQuestionWord.textContent = currentCard.front;
+    //     synonymQuizProgress.textContent = `Question ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
+        
+    //     // --- Logic tạo câu hỏi trắc nghiệm ---
+    //     // 1. Lấy một đáp án đúng
+    //     correctSynonymAnswer = currentCard.synonyms[Math.floor(Math.random() * currentCard.synonyms.length)];
+
+    //     // 2. Lấy 3 đáp án sai (distractors)
+    //     const allOtherSynonyms = cards
+    //         .filter(c => c.id !== currentCard.id && c.synonyms && c.synonyms.length > 0)
+    //         .flatMap(c => c.synonyms);
+    //     const uniqueDistractors = [...new Set(allOtherSynonyms)]
+    //         .filter(s => !currentCard.synonyms.includes(s)); // Loại bỏ các từ đồng nghĩa của câu hỏi hiện tại
+        
+    //     const distractors = [];
+    //     for (let i = 0; i < 3; i++) {
+    //         if (uniqueDistractors.length > 0) {
+    //             const randomIndex = Math.floor(Math.random() * uniqueDistractors.length);
+    //             distractors.push(uniqueDistractors.splice(randomIndex, 1)[0]);
+    //         }
+    //     }
+        
+    //     // 3. Gộp và xáo trộn các lựa chọn
+    //     const options = [...distractors, correctSynonymAnswer];
+    //     options.sort(() => Math.random() - 0.5);
+
+    //     // 4. Hiển thị các lựa chọn
+    //     options.forEach(option => {
+    //         const button = document.createElement('button');
+    //         button.type = 'button';
+    //         button.className = 'btn btn-outline-primary';
+    //         button.textContent = option;
+    //         synonymOptionsContainer.appendChild(button);
+    //     });
+    // };
+
+    // const checkSynonymAnswer = (selectedAnswer) => {
+    //     // Vô hiệu hóa các nút lựa chọn
+    //     Array.from(synonymOptionsContainer.children).forEach(button => {
+    //         button.disabled = true;
+    //         if (button.textContent === correctSynonymAnswer) {
+    //             button.classList.remove('btn-outline-primary');
+    //             button.classList.add('btn-success'); // Tô màu xanh cho đáp án đúng
+    //         }
+    //     });
+
+    //     if (selectedAnswer === correctSynonymAnswer) {
+    //         synonymFeedback.innerHTML = `<p class="text-success fw-bold">Chính xác! 🎉</p>`;
+    //     } else {
+    //         synonymFeedback.innerHTML = `<p class="text-danger fw-bold">Không đúng. Đáp án đúng là "${correctSynonymAnswer}".</p>`;
+    //         // Tô màu đỏ cho đáp án sai đã chọn
+    //         const selectedBtn = Array.from(synonymOptionsContainer.children).find(b => b.textContent === selectedAnswer);
+    //         if(selectedBtn) {
+    //             selectedBtn.classList.remove('btn-outline-primary');
+    //             selectedBtn.classList.add('btn-danger');
+    //         }
+    //     }
+
+    //     nextSynonymQuestionBtn.classList.remove('hidden');
+    // };
+
+    const displaySynonymQuestion_Easy = () => {
+        // Reset UI
         synonymOptionsContainer.innerHTML = '';
         synonymFeedback.innerHTML = '';
         nextSynonymQuestionBtn.classList.add('hidden');
+        checkSynonymAnswerBtn.classList.add('hidden');
 
         const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
         synonymQuestionWord.textContent = currentCard.front;
-        synonymQuizProgress.textContent = `Question ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
+        synonymQuizProgress.textContent = `Câu ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
         
-        // --- Logic tạo câu hỏi trắc nghiệm ---
-        // 1. Lấy một đáp án đúng
+        // Logic tạo câu hỏi trắc nghiệm 1 lựa chọn (như cũ)
         correctSynonymAnswer = currentCard.synonyms[Math.floor(Math.random() * currentCard.synonyms.length)];
-
-        // 2. Lấy 3 đáp án sai (distractors)
-        const allOtherSynonyms = cards
-            .filter(c => c.id !== currentCard.id && c.synonyms && c.synonyms.length > 0)
-            .flatMap(c => c.synonyms);
-        const uniqueDistractors = [...new Set(allOtherSynonyms)]
-            .filter(s => !currentCard.synonyms.includes(s)); // Loại bỏ các từ đồng nghĩa của câu hỏi hiện tại
-        
+        const allOtherSynonyms = cards.filter(c => c.id !== currentCard.id && c.synonyms && c.synonyms.length > 0).flatMap(c => c.synonyms);
+        const uniqueDistractors = [...new Set(allOtherSynonyms)].filter(s => !currentCard.synonyms.includes(s));
         const distractors = [];
         for (let i = 0; i < 3; i++) {
             if (uniqueDistractors.length > 0) {
@@ -666,28 +742,68 @@ const populateDeckDropdowns = () => {
                 distractors.push(uniqueDistractors.splice(randomIndex, 1)[0]);
             }
         }
-        
-        // 3. Gộp và xáo trộn các lựa chọn
         const options = [...distractors, correctSynonymAnswer];
         options.sort(() => Math.random() - 0.5);
 
-        // 4. Hiển thị các lựa chọn
+        // Hiển thị dưới dạng NÚT
         options.forEach(option => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'btn btn-outline-primary';
+            button.className = 'btn btn-outline-primary d-block w-100 mb-2';
             button.textContent = option;
             synonymOptionsContainer.appendChild(button);
         });
     };
 
-    const checkSynonymAnswer = (selectedAnswer) => {
-        // Vô hiệu hóa các nút lựa chọn
+    const displaySynonymQuestion_Hard = () => {
+        // Reset UI
+        synonymOptionsContainer.innerHTML = '';
+        synonymFeedback.innerHTML = '';
+        nextSynonymQuestionBtn.classList.add('hidden');
+        checkSynonymAnswerBtn.classList.remove('hidden');
+
+        const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
+        synonymQuestionWord.textContent = currentCard.front;
+        synonymQuizProgress.textContent = `Câu ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
+        
+        const correctAnswers = currentCard.synonyms;
+        const numCorrect = correctAnswers.length;
+        const numDistractors = Math.max(2, 6 - numCorrect); // Tạo ít nhất 2 đáp án sai, tổng số lựa chọn khoảng 6
+
+        // Lấy các đáp án sai
+        const allOtherSynonyms = cards.filter(c => c.id !== currentCard.id && c.synonyms && c.synonyms.length > 0).flatMap(c => c.synonyms);
+        const uniqueDistractors = [...new Set(allOtherSynonyms)].filter(s => !correctAnswers.includes(s));
+        const distractors = [];
+        for (let i = 0; i < numDistractors; i++) {
+            if (uniqueDistractors.length > 0) {
+                const randomIndex = Math.floor(Math.random() * uniqueDistractors.length);
+                distractors.push(uniqueDistractors.splice(randomIndex, 1)[0]);
+            }
+        }
+        const options = [...correctAnswers, ...distractors];
+        options.sort(() => Math.random() - 0.5);
+
+        // Hiển thị dưới dạng CHECKBOX
+        synonymOptionsContainer.className = 'text-start col-10 col-md-8 mx-auto';
+        options.forEach((option, index) => {
+            const checkboxHTML = `
+                <div class="form-check fs-5">
+                    <input class="form-check-input" type="checkbox" value="${option}" id="check-option-${index}">
+                    <label class="form-check-label" for="check-option-${index}">
+                        ${option}
+                    </label>
+                </div>`;
+            synonymOptionsContainer.innerHTML += checkboxHTML;
+        });
+    };
+
+    const checkSynonymAnswer_Easy = (selectedAnswer) => {
+        // Vô hiệu hóa các nút
         Array.from(synonymOptionsContainer.children).forEach(button => {
             button.disabled = true;
             if (button.textContent === correctSynonymAnswer) {
                 button.classList.remove('btn-outline-primary');
-                button.classList.add('btn-success'); // Tô màu xanh cho đáp án đúng
+                button.classList.add('btn-success');
             }
         });
 
@@ -695,12 +811,54 @@ const populateDeckDropdowns = () => {
             synonymFeedback.innerHTML = `<p class="text-success fw-bold">Chính xác! 🎉</p>`;
         } else {
             synonymFeedback.innerHTML = `<p class="text-danger fw-bold">Không đúng. Đáp án đúng là "${correctSynonymAnswer}".</p>`;
-            // Tô màu đỏ cho đáp án sai đã chọn
             const selectedBtn = Array.from(synonymOptionsContainer.children).find(b => b.textContent === selectedAnswer);
             if(selectedBtn) {
                 selectedBtn.classList.remove('btn-outline-primary');
                 selectedBtn.classList.add('btn-danger');
             }
+        }
+        nextSynonymQuestionBtn.classList.remove('hidden');
+    };
+
+    const checkSynonymAnswer_Hard = () => {
+        checkSynonymAnswerBtn.classList.add('hidden');
+
+        const correctAnswers = new Set(currentSynonymQuiz[currentSynonymQuestionIndex].synonyms);
+        const selectedAnswers = new Set(
+            [...synonymOptionsContainer.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value)
+        );
+
+        let correctSelections = 0;
+        let incorrectSelections = 0;
+
+        // Vô hiệu hóa và tô màu
+        synonymOptionsContainer.querySelectorAll('.form-check').forEach(checkDiv => {
+            const checkbox = checkDiv.querySelector('input');
+            const label = checkDiv.querySelector('label');
+            checkbox.disabled = true;
+
+            const isCorrectAnswer = correctAnswers.has(checkbox.value);
+            const wasSelected = selectedAnswers.has(checkbox.value);
+
+            if (isCorrectAnswer) {
+                label.classList.add('text-success', 'fw-bold'); // Đáp án đúng luôn có màu xanh
+                if (wasSelected) {
+                    correctSelections++;
+                }
+            } else {
+                if (wasSelected) {
+                    label.classList.add('text-danger'); // Chọn sai
+                    label.style.textDecoration = 'line-through';
+                    incorrectSelections++;
+                }
+            }
+        });
+        
+        // Đưa ra phản hồi
+        if (incorrectSelections === 0 && correctSelections === correctAnswers.size) {
+            synonymFeedback.innerHTML = `<p class="text-success fw-bold">Tuyệt vời! Bạn đã chọn đúng tất cả. ✅</p>`;
+        } else {
+            synonymFeedback.innerHTML = `<p class="text-warning fw-bold">Chưa hoàn toàn chính xác. Hãy xem lại các đáp án được tô màu. 🧐</p>`;
         }
 
         nextSynonymQuestionBtn.classList.remove('hidden');
@@ -716,15 +874,23 @@ const populateDeckDropdowns = () => {
     endSynonymQuizBtn.addEventListener('click', endSynonymQuiz);
 
     synonymOptionsContainer.addEventListener('click', (e) => {
-        if (e.target.tagName === 'BUTTON') {
-            checkSynonymAnswer(e.target.textContent);
+        // Chỉ hoạt động ở mức dễ
+        if (currentSynonymQuizLevel === 'easy' && e.target.tagName === 'BUTTON') {
+            checkSynonymAnswer_Easy(e.target.textContent);
         }
     });
+
+    checkSynonymAnswerBtn.addEventListener('click', checkSynonymAnswer_Hard);
 
     nextSynonymQuestionBtn.addEventListener('click', () => {
         currentSynonymQuestionIndex++;
         if (currentSynonymQuestionIndex < currentSynonymQuiz.length) {
-            displaySynonymQuestion();
+            // Gọi hàm hiển thị tương ứng
+            if (currentSynonymQuizLevel === 'easy') {
+                displaySynonymQuestion_Easy();
+            } else {
+                displaySynonymQuestion_Hard();
+            }
         } else {
             alert('Bạn đã hoàn thành phần luyện tập từ đồng nghĩa!');
             endSynonymQuiz();
