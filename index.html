@@ -20,17 +20,17 @@
             <div id="auth-container">
             </div>
             <h1>Flashcard Master 🎓</h1>
-            <p class="lead">Nền tảng học từ vựng cá nhân của bạn</p>
+            <p class="lead">Your personal vocabulary learning platform (Beta)</p>
         </header>
 
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="library-tab" data-bs-toggle="tab" data-bs-target="#library-pane"
-                    type="button" role="tab">📚 Thư viện</button>
+                    type="button" role="tab">📚 Libraries</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="add-card-tab" data-bs-toggle="tab" data-bs-target="#add-card-pane"
-                    type="button" role="tab">➕ Thêm thẻ mới</button>
+                    type="button" role="tab">➕ Add New Card</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="quiz-tab" data-bs-toggle="tab" data-bs-target="#quiz-pane" type="button"
@@ -44,97 +44,95 @@
 
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active p-3" id="library-pane" role="tabpanel">
-                <h4>Quản lý bộ thẻ</h4>
+                <h4>Manage Decks</h4>
                 <div class="input-group mb-3">
-                    <input type="text" id="new-deck-input" class="form-control" placeholder="Tên bộ thẻ mới...">
-                    <button id="add-deck-btn" class="btn btn-primary">Tạo</button>
+                    <input type="text" id="new-deck-input" class="form-control" placeholder="New deck name...">
+                    <button id="add-deck-btn" class="btn btn-primary">Create</button>
                 </div>
 
                 <div id="deck-list" class="row g-3">
                 </div>
                 <hr>
                 <div class="my-3 p-3 bg-light border rounded">
-                    <h5>Công cụ dữ liệu</h5>
-                    <p class="small text-muted">Sử dụng chức năng này để tự động tìm và thêm từ đồng nghĩa cho tất cả
-                        các thẻ cũ chưa có. Quá trình này có thể mất vài phút tùy thuộc vào số lượng thẻ của bạn.</p>
-                    <button id="batch-update-synonyms-btn" class="btn btn-info">🚀 Chạy cập nhật từ đồng nghĩa hàng
-                        loạt</button>
+                    <h5>Data Tools</h5>
+                    <p class="small text-muted">Use this feature to automatically find and add synonyms for all
+                        old cards that don't have them. This process may take a few minutes depending on the number of cards you have.</p>
+                    <button id="batch-update-synonyms-btn" class="btn btn-info">🚀 Run Batch Synonym Update</button>
                 </div>
-                <h4 id="cards-list-title" class="mt-4">Tất cả thẻ</h4>
+                <h4 id="cards-list-title" class="mt-4">All Cards</h4>
                 <div id="cards-list" class="list-group">
                 </div>
             </div>
 
             <div class="tab-pane fade p-3" id="add-card-pane" role="tabpanel">
-                <h4>Thêm thẻ kiến thức mới</h4>
+                <h4>Add New Knowledge Card</h4>
                 <div class="form-group mb-2">
-                    <label for="deck-select">Chọn bộ thẻ</label>
+                    <label for="deck-select">Select Deck</label>
                     <select id="deck-select" class="form-select"></select>
                 </div>
                 <div class="form-group mb-2">
-                    <label for="front-input">Mặt trước (Tiếng Anh)</label>
+                    <label for="front-input">Front (English)</label>
                     <div class="input-group">
-                        <input type="text" id="front-input" class="form-control" placeholder="Nhập từ tiếng Anh...">
-                        <button class="btn btn-outline-secondary" type="button" id="search-synonyms-btn">🔍 Tự động tìm
-                            từ đồng nghĩa</button>
+                        <input type="text" id="front-input" class="form-control" placeholder="Enter English word...">
+                        <button class="btn btn-outline-secondary" type="button" id="search-synonyms-btn">🔍 Find Synonyms Automatically</button>
                     </div>
                 </div>
 
                 <div id="synonyms-manager" class="mt-3">
-                    <label class="form-label">Danh sách từ đồng nghĩa (có thể thêm/sửa/xóa):</label>
+                    <label class="form-label">Synonym List (can add/edit/delete):</label>
                     <div id="synonyms-list" class="mb-2">
                     </div>
                     <div class="input-group input-group-sm">
                         <input type="text" id="manual-synonym-input" class="form-control"
-                            placeholder="Thêm thủ công...">
-                        <button class="btn btn-outline-success" type="button" id="add-synonym-btn">Thêm</button>
+                            placeholder="Add manually...">
+                        <button class="btn btn-outline-success" type="button" id="add-synonym-btn">Add</button>
                     </div>
                 </div>
                 <div class="form-group mb-3 mt-3">
-                    <label for="back-input">Mặt sau (Nghĩa Tiếng Việt & Ví dụ)</label>
+                    <label for="back-input">Back (Vietnamese Meaning & Example)</label>
                     <textarea id="back-input" class="form-control" rows="4"></textarea>
                 </div>
-                <button id="save-card-btn" class="btn btn-success">Lưu thẻ</button>
+                <button id="save-card-btn" class="btn btn-success">Save Card</button>
             </div>
 
             <div class="tab-pane fade p-3" id="quiz-pane" role="tabpanel">
                 <div id="quiz-setup">
                     <div class="section-box">
-                        <h3>Bắt đầu ôn tập</h3>
+                        <h3>Start Quiz</h3>
                         <div class="setup-row mb-3">
-                            <label for="quiz-deck-filter" class="form-label">Chọn bộ thẻ:</label>
+                            <label for="quiz-deck-filter" class="form-label">Select Deck:</label>
                             <select id="quiz-deck-filter" class="form-select"></select>
                         </div>
                         <div class="setup-row mb-3">
-                            <label for="quiz-direction" class="form-label">Kiểm tra:</label>
+                            <label for="quiz-direction" class="form-label">Direction:</label>
                             <select id="quiz-direction" class="form-select">
-                                <option value="front-to-back">Mặt trước ➤ Mặt sau</option>
-                                <option value="back-to-front">Mặt sau ➤ Mặt trước</option>
+                                <option value="front-to-back">Front ➤ Back</option>
+                                <option value="back-to-front">Back ➤ Front</option>
                             </select>
                         </div>
                         <div class="setup-row statuses mb-3">
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input status-filter" type="checkbox" value="chua-thuoc"
                                     id="check-chua-thuoc" checked>
-                                <label class="form-check-label" for="check-chua-thuoc">Chưa thuộc</label>
+                                <label class="form-check-label" for="check-chua-thuoc">Not Learned</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input status-filter" type="checkbox" value="tam-on"
                                     id="check-tam-on" checked>
-                                <label class="form-check-label" for="check-tam-on">Tạm ổn</label>
+                                <label class="form-check-label" for="check-tam-on">Moderately Learned</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input status-filter" type="checkbox" value="da-thuoc"
                                     id="check-da-thuoc">
-                                <label class="form-check-label" for="check-da-thuoc">Đã thuộc</label>
+                                <label class="form-check-label" for="check-da-thuoc">Fully Learned</label>
                             </div>
                         </div>
-                        <button id="start-quiz-btn" class="btn btn-primary btn-lg">🚀 Bắt đầu!</button>
+                        <button id="start-quiz-btn" class="btn btn-primary btn-lg">🚀 Start!</button>
                     </div>
                 </div>
                 <div id="quiz-view" class="hidden">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <button id="end-quiz-btn" class="btn btn-sm btn-outline-secondary">Kết thúc</button>
+                        <button id="end-quiz-btn" class="btn btn-sm btn-outline-secondary">End</button>
                         <h4 id="quiz-progress" class="mb-0"></h4>
                     </div>
                     <div class="quiz-card">
@@ -155,45 +153,45 @@
                         </div>
                     </div>
                     <div id="status-buttons" class="mt-3 text-center hidden">
-                        <button class="btn btn-danger status-btn" data-status="chua-thuoc">🟥 Chưa thuộc</button>
-                        <button class="btn btn-warning status-btn" data-status="tam-on">🟨 Tạm ổn</button>
-                        <button class="btn btn-success status-btn" data-status="da-thuoc">🟩 Đã thuộc</button>
+                        <button class="btn btn-danger status-btn" data-status="chua-thuoc">🟥 Not Learned</button>
+                        <button class="btn btn-warning status-btn" data-status="tam-on">🟨 Moderately Learned</button>
+                        <button class="btn btn-success status-btn" data-status="da-thuoc">🟩 Fully Learned</button>
                     </div>
                 </div>
             </div>
             <div class="tab-pane fade p-3" id="synonym-quiz-pane" role="tabpanel">
                 <div id="synonym-quiz-setup">
                     <div class="section-box">
-                        <h3>Luyện tập Từ đồng nghĩa</h3>
-                        <p>Hệ thống sẽ đưa ra một từ, bạn hãy chọn từ đồng nghĩa đúng nhất trong các lựa chọn bên dưới.
+                        <h3>Practice Synonyms</h3>
+                        <p>The system will present a word, and you must choose the most appropriate synonym from the options below.
                         </p>
                         <div class="setup-row mb-3">
-                            <label class="form-label">Chọn các bộ thẻ để ôn tập:</label>
+                            <label class="form-label">Select the decks to study:</label>
                             <div id="synonym-deck-checkboxes" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
                                 </div>
                             <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" id="synonym-toggle-all-decks" checked>
                                 <label class="form-check-label" for="synonym-toggle-all-decks">
-                                    Chọn tất cả / Bỏ chọn tất cả
+                                    Select All / Deselect All
                                 </label>
                             </div>
                         </div>
-                        <button id="start-synonym-quiz-btn" class="btn btn-info btn-lg">💡 Bắt đầu ngay!</button>
+                        <button id="start-synonym-quiz-btn" class="btn btn-info btn-lg">💡 Start Now!</button>
                     </div>
                 </div>
                 <div id="synonym-quiz-view" class="hidden">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <button id="end-synonym-quiz-btn" class="btn btn-sm btn-outline-secondary">Kết thúc</button>
+                        <button id="end-synonym-quiz-btn" class="btn btn-sm btn-outline-secondary">End</button>
                         <h4 id="synonym-quiz-progress" class="mb-0"></h4>
                     </div>
                     <div class="text-center">
-                        <p class="lead">Tìm từ đồng nghĩa cho:</p>
+                        <p class="lead">Find a synonym for:</p>
                         <h2 id="synonym-question-word" class="display-4 my-4"></h2>
                         <div id="synonym-options-container" class="d-grid gap-2 col-6 mx-auto">
 
                         </div>
                         <div id="synonym-feedback" class="mt-3"></div>
-                        <button id="next-synonym-question-btn" class="btn btn-primary mt-4 hidden">Câu tiếp theo
+                        <button id="next-synonym-question-btn" class="btn btn-primary mt-4 hidden">Next Question
                             ➔</button>
                     </div>
                 </div>
@@ -217,21 +215,19 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Tùy chọn Nhập Dữ liệu</h5>
+                    <h5 class="modal-title">Import Options</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Bạn muốn xử lý dữ liệu từ file như thế nào?</p>
+                    <p>How would you like to process the data from the file?</p>
                     <div class="d-grid gap-2">
                         <button type="button" class="btn btn-primary" id="merge-data-btn">
-                            <strong>Hợp nhất (An toàn)</strong>
-                            <small class="d-block">Chỉ thêm các bộ thẻ và thẻ mới. Dữ liệu hiện tại sẽ được giữ
-                                lại.</small>
+                            <strong>Merge (Safe)</strong>
+                            <small class="d-block">Only add new decks and cards. Current data will be preserved.</small>
                         </button>
                         <button type="button" class="btn btn-danger" id="replace-data-btn">
-                            <strong>Ghi đè (Xóa dữ liệu cũ)</strong>
-                            <small class="d-block">Xóa toàn bộ dữ liệu hiện tại và thay thế bằng dữ liệu từ
-                                file.</small>
+                            <strong>Replace (Delete Old Data)</strong>
+                            <small class="d-block">Delete all current data and replace it with data from the file.</small>
                         </button>
                     </div>
                 </div>
@@ -243,43 +239,43 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Chỉnh sửa thẻ</h5>
+                    <h5 class="modal-title">Edit Card</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit-card-id">
                     <div class="form-group mb-2">
-                        <label for="edit-deck-select">Bộ thẻ</label>
+                        <label for="edit-deck-select">Deck</label>
                         <select id="edit-deck-select" class="form-select"></select>
                     </div>
                     <div class="form-group mb-2">
-                        <label for="edit-front-input">Mặt trước</label>
+                        <label for="edit-front-input">Front</label>
                         <div class="input-group">
                             <input type="text" id="edit-front-input" class="form-control">
                             <button class="btn btn-outline-secondary" type="button" id="edit-search-synonyms-btn">🔍
-                                Tìm</button>
+                                Search</button>
                         </div>
                     </div>
 
                     <div id="edit-synonyms-manager" class="mt-3">
-                        <label class="form-label">Danh sách từ đồng nghĩa:</label>
+                        <label class="form-label">Synonyms List:</label>
                         <div id="edit-synonyms-list" class="mb-2">
                         </div>
                         <div class="input-group input-group-sm">
                             <input type="text" id="edit-manual-synonym-input" class="form-control"
-                                placeholder="Thêm thủ công...">
+                                placeholder="Add manually...">
                             <button class="btn btn-outline-success" type="button"
-                                id="edit-add-synonym-btn">Thêm</button>
+                                id="edit-add-synonym-btn">Add</button>
                         </div>
                     </div>
                     <div class="form-group mb-3 mt-3">
-                        <label for="edit-back-input">Mặt sau</label>
+                        <label for="edit-back-input">Back</label>
                         <textarea id="edit-back-input" class="form-control" rows="4"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" id="save-edit-btn">Lưu thay đổi</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-edit-btn">Save Changes</button>
                 </div>
             </div>
         </div>

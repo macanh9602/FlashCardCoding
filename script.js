@@ -155,20 +155,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderDecks = () => {
-        deckListDiv.innerHTML = `<div class="col-md-4 col-sm-6"><div class="card deck-card text-center h-100 ${activeDeck === 'all' ? 'active' : ''}" data-deck="all"><div class="card-body"><h5 class="card-title">Tất cả thẻ</h5><p class="card-text text-muted">${cards.length} thẻ</p></div></div></div>`;
+        deckListDiv.innerHTML = `<div class="col-md-4 col-sm-6"><div class="card deck-card text-center h-100 ${activeDeck === 'all' ? 'active' : ''}" data-deck="all"><div class="card-body"><h5 class="card-title">All Cards</h5><p class="card-text text-muted">${cards.length} cards</p></div></div></div>`;
         decks.forEach(deck => {
             const cardCount = cards.filter(c => c.deck === deck.name).length;
-            deckListDiv.innerHTML += `<div class="col-md-4 col-sm-6"><div class="card deck-card text-center h-100 ${activeDeck === deck.name ? 'active' : ''}" data-deck="${deck.name}"><button class="btn delete-deck-btn" data-id="${deck.id}" data-deck-name="${deck.name}"><i class="bi bi-x-circle"></i></button><div class="card-body"><h5 class="card-title">${deck.name}</h5><p class="card-text text-muted">${cardCount} thẻ</p></div></div></div>`;
+            deckListDiv.innerHTML += `<div class="col-md-4 col-sm-6"><div class="card deck-card text-center h-100 ${activeDeck === deck.name ? 'active' : ''}" data-deck="${deck.name}"><button class="btn delete-deck-btn" data-id="${deck.id}" data-deck-name="${deck.name}"><i class="bi bi-x-circle"></i></button><div class="card-body"><h5 class="card-title">${deck.name}</h5><p class="card-text text-muted">${cardCount} cards:</p></div></div></div>`;
         });
     };
 
     const displayCardsByDeck = (deckName) => {
         activeDeck = deckName;
-        cardsListTitle.innerText = deckName === 'all' ? 'Tất cả thẻ' : `Thẻ trong bộ: ${deckName}`;
+        cardsListTitle.innerText = deckName === 'all' ? 'All Cards' : `Cards in Deck: ${deckName}`;
         const filteredCards = deckName === 'all' ? cards : cards.filter(card => card.deck === deckName);
         cardsListDiv.innerHTML = '';
         if (filteredCards.length === 0) {
-            cardsListDiv.innerHTML = '<p class="text-center text-muted mt-3">Không có thẻ nào.</p>';
+            cardsListDiv.innerHTML = '<p class="text-center text-muted mt-3">No cards found.</p>';
             return;
         }
         filteredCards.forEach(card => {
@@ -178,12 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const populateDeckDropdowns = () => {
         const deckNames = decks.map(d => d.name);
-        if (deckNames.length === 0) deckNames.push('Mặc định');
-        
+        if (deckNames.length === 0) deckNames.push('Default');
+
         // --- Xử lý các dropdown cũ ---
         deckSelect.innerHTML = '';
         editDeckSelect.innerHTML = '';
-        quizDeckFilter.innerHTML = '<option value="all">Tất cả bộ thẻ</option>';
+        quizDeckFilter.innerHTML = '<option value="all">All decks</option>';
         deckNames.forEach(name => {
             const option = `<option value="${name}">${name}</option>`;
             deckSelect.innerHTML += option;
@@ -567,7 +567,7 @@ const populateDeckDropdowns = () => {
                 quizBack.textContent = card.front;
             }
             quizIpa.textContent = card.ipa || '';
-            quizProgress.textContent = `Thẻ ${currentCardIndex + 1} / ${currentQuiz.length}`;
+            quizProgress.textContent = `Card ${currentCardIndex + 1} / ${currentQuiz.length}`;
             statusButtonsDiv.classList.add('hidden');
         }, 300);
     };
@@ -646,7 +646,7 @@ const populateDeckDropdowns = () => {
 
         const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
         synonymQuestionWord.textContent = currentCard.front;
-        synonymQuizProgress.textContent = `Câu ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
+        synonymQuizProgress.textContent = `Question ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
         
         // --- Logic tạo câu hỏi trắc nghiệm ---
         // 1. Lấy một đáp án đúng
