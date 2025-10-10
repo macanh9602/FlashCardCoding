@@ -74,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const editAddSynonymBtn = document.getElementById('edit-add-synonym-btn');
     const batchUpdateSynonymsBtn = document.getElementById('batch-update-synonyms-btn');
 
+    const exampleInput = document.getElementById('example-input');
+    const editExampleInput = document.getElementById('edit-example-input');
+    const quizExample = document.getElementById('quiz-example');
+
     // --- AUTH FUNCTIONS ---
     const signOut = () => {
         auth.signOut().catch(error => console.error("Lỗi đăng xuất:", error));
@@ -130,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.speechSynthesis.speak(utterance);
     };
 
-        // --- API & SPEAK FUNCTIONS ---
+    // --- API & SPEAK FUNCTIONS ---
     const fetchWordDefinition = async (word) => {
         try {
             const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -146,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     };
-    
+
     // --- UI RENDERING ---
     const renderUI = () => {
         renderDecks();
@@ -176,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-const populateDeckDropdowns = () => {
+    const populateDeckDropdowns = () => {
         const deckNames = decks.map(d => d.name);
         if (deckNames.length === 0) deckNames.push('Default');
 
@@ -226,14 +230,14 @@ const populateDeckDropdowns = () => {
         // Nếu đang có thông báo placeholder, hãy xóa nó đi
         const placeholder = container.querySelector('p');
         if (placeholder) placeholder.remove();
-        
+
         const badge = document.createElement('span');
         badge.className = 'badge text-bg-secondary me-2 mb-2 p-2 fw-normal d-inline-flex align-items-center';
-        
+
         const textSpan = document.createElement('span');
         textSpan.textContent = synonymText;
         textSpan.className = 'synonym-text';
-        
+
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
         deleteBtn.className = 'btn-close btn-close-white ms-2';
@@ -282,7 +286,7 @@ const populateDeckDropdowns = () => {
     editSearchSynonymsBtn.addEventListener('click', async () => {
         const frontText = editFrontInput.value.trim();
         if (!frontText) return alert('Vui lòng nhập từ ở "Mặt trước".');
-        
+
         editSynonymsListDiv.innerHTML = '<p class="text-muted fst-italic">Đang tìm...</p>';
         const wordData = await fetchWordDefinition(frontText);
         let synonyms = [];
@@ -322,12 +326,12 @@ const populateDeckDropdowns = () => {
         if (e.target.classList.contains('synonym-text')) {
             const currentText = e.target.textContent;
             const parentBadge = e.target.parentElement;
-            
+
             const input = document.createElement('input');
             input.type = 'text';
             input.value = currentText;
             input.className = 'form-control form-control-sm';
-            
+
             const finishEditing = (event) => {
                 const newText = event.target.value.trim();
                 if (newText) {
@@ -378,7 +382,7 @@ const populateDeckDropdowns = () => {
             manualSynonymInput.value = '';
         }
     });
-     manualSynonymInput.addEventListener('keypress', function (e) {
+    manualSynonymInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             addSynonymBtn.click();
         }
@@ -398,12 +402,12 @@ const populateDeckDropdowns = () => {
         if (e.target.classList.contains('synonym-text')) {
             const currentText = e.target.textContent;
             const parentBadge = e.target.parentElement;
-            
+
             const input = document.createElement('input');
             input.type = 'text';
             input.value = currentText;
             input.className = 'form-control form-control-sm';
-            
+
             input.addEventListener('blur', finishEditing);
             input.addEventListener('keypress', (event) => {
                 if (event.key === 'Enter') {
@@ -424,14 +428,15 @@ const populateDeckDropdowns = () => {
         }
     });
 
-// Nút Lưu Thẻ - PHIÊN BẢN CUỐI CÙNG
+    // Nút Lưu Thẻ - PHIÊN BẢN CUỐI CÙNG
     const saveCardButton = document.getElementById('save-card-btn');
     if (saveCardButton) {
         saveCardButton.addEventListener('click', () => { // Bỏ async, không cần gọi API ở đây nữa
             if (!deckSelect.value) return alert("Vui lòng tạo một bộ thẻ trước!");
-            
+
             const frontText = frontInput.value.trim();
             const backText = backInput.value.trim();
+            const exampleText = exampleInput.value.trim();
 
             if (!frontText || !backText) {
                 return alert('Vui lòng điền đầy đủ thông tin!');
@@ -452,10 +457,11 @@ const populateDeckDropdowns = () => {
             cardsRef.add(card).then(() => {
                 activeDeck = card.deck;
                 document.getElementById('library-tab').click();
-                
+
                 // Xóa dữ liệu đã nhập để chuẩn bị cho thẻ mới
                 frontInput.value = '';
                 backInput.value = '';
+                exampleInput.value = '';
                 synonymsListDiv.innerHTML = '';
                 manualSynonymInput.value = '';
 
@@ -496,10 +502,10 @@ const populateDeckDropdowns = () => {
                 editDeckSelect.value = cardToEdit.deck;
                 editFrontInput.value = cardToEdit.front;
                 editBackInput.value = cardToEdit.back;
-                
+
                 // HIỂN THỊ TỪ ĐỒNG NGHĨA KHI MỞ MODAL
                 renderSynonymBadges(cardToEdit.synonyms || [], editSynonymsListDiv);
-                
+
                 editModal.show();
             }
         } else if (target.classList.contains('delete-btn')) {
@@ -511,7 +517,7 @@ const populateDeckDropdowns = () => {
 
     saveEditBtn.addEventListener('click', () => {
         const id = editCardId.value;
-        
+
         // Lấy danh sách từ đồng nghĩa cuối cùng từ UI của modal
         const finalSynonyms = getSynonymsFromUI(editSynonymsListDiv);
 
@@ -607,7 +613,7 @@ const populateDeckDropdowns = () => {
     ttsUSBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(quizFront.textContent, 'en-US') });
     ttsUKBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(quizFront.textContent, 'en-GB') });
 
-// --- SYNONYM QUIZ LOGIC ---
+    // --- SYNONYM QUIZ LOGIC ---
     let currentSynonymQuiz = [];
     let currentSynonymQuestionIndex = 0;
     let correctSynonymAnswer = '';
@@ -616,19 +622,19 @@ const populateDeckDropdowns = () => {
 
     const startSynonymQuiz = () => {
         const selectedDecks = [...document.querySelectorAll('#synonym-deck-checkboxes .deck-filter-checkbox:checked')]
-                                 .map(cb => cb.value);
+            .map(cb => cb.value);
 
         if (selectedDecks.length === 0) {
             return alert('You must select at least one deck to start the synonym quiz.');
         }
-        
+
         // Đọc mức độ khó đã chọn
         currentSynonymQuizLevel = document.querySelector('input[name="difficulty-level"]:checked').value;
 
         // Lọc thẻ
         let potentialCards = cards.filter(card => selectedDecks.includes(card.deck));
         currentSynonymQuiz = potentialCards.filter(card => card.synonyms && card.synonyms.length > 0);
-        
+
         // Mức khó yêu cầu thẻ phải có ít nhất 2 từ đồng nghĩa để tạo câu hỏi thú vị
         if (currentSynonymQuizLevel === 'hard') {
             currentSynonymQuiz = currentSynonymQuiz.filter(card => card.synonyms.length >= 2);
@@ -643,7 +649,7 @@ const populateDeckDropdowns = () => {
         currentSynonymQuestionIndex = 0;
         synonymQuizSetupDiv.classList.add('hidden');
         synonymQuizViewDiv.classList.remove('hidden');
-        
+
         // Gọi hàm hiển thị câu hỏi tương ứng với mức độ
         if (currentSynonymQuizLevel === 'easy') {
             displaySynonymQuestion_Easy();
@@ -661,7 +667,7 @@ const populateDeckDropdowns = () => {
     //     const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
     //     synonymQuestionWord.textContent = currentCard.front;
     //     synonymQuizProgress.textContent = `Question ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
-        
+
     //     // --- Logic tạo câu hỏi trắc nghiệm ---
     //     // 1. Lấy một đáp án đúng
     //     correctSynonymAnswer = currentCard.synonyms[Math.floor(Math.random() * currentCard.synonyms.length)];
@@ -672,7 +678,7 @@ const populateDeckDropdowns = () => {
     //         .flatMap(c => c.synonyms);
     //     const uniqueDistractors = [...new Set(allOtherSynonyms)]
     //         .filter(s => !currentCard.synonyms.includes(s)); // Loại bỏ các từ đồng nghĩa của câu hỏi hiện tại
-        
+
     //     const distractors = [];
     //     for (let i = 0; i < 3; i++) {
     //         if (uniqueDistractors.length > 0) {
@@ -680,7 +686,7 @@ const populateDeckDropdowns = () => {
     //             distractors.push(uniqueDistractors.splice(randomIndex, 1)[0]);
     //         }
     //     }
-        
+
     //     // 3. Gộp và xáo trộn các lựa chọn
     //     const options = [...distractors, correctSynonymAnswer];
     //     options.sort(() => Math.random() - 0.5);
@@ -730,7 +736,7 @@ const populateDeckDropdowns = () => {
         const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
         synonymQuestionWord.textContent = currentCard.front;
         synonymQuizProgress.textContent = `Câu ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
-        
+
         // Logic tạo câu hỏi trắc nghiệm 1 lựa chọn (như cũ)
         correctSynonymAnswer = currentCard.synonyms[Math.floor(Math.random() * currentCard.synonyms.length)];
         const allOtherSynonyms = cards.filter(c => c.id !== currentCard.id && c.synonyms && c.synonyms.length > 0).flatMap(c => c.synonyms);
@@ -765,7 +771,7 @@ const populateDeckDropdowns = () => {
         const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
         synonymQuestionWord.textContent = currentCard.front;
         synonymQuizProgress.textContent = `Câu ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
-        
+
         const correctAnswers = currentCard.synonyms;
         const numCorrect = correctAnswers.length;
         const numDistractors = Math.max(2, 6 - numCorrect); // Tạo ít nhất 2 đáp án sai, tổng số lựa chọn khoảng 6
@@ -812,7 +818,7 @@ const populateDeckDropdowns = () => {
         } else {
             synonymFeedback.innerHTML = `<p class="text-danger fw-bold">Không đúng. Đáp án đúng là "${correctSynonymAnswer}".</p>`;
             const selectedBtn = Array.from(synonymOptionsContainer.children).find(b => b.textContent === selectedAnswer);
-            if(selectedBtn) {
+            if (selectedBtn) {
                 selectedBtn.classList.remove('btn-outline-primary');
                 selectedBtn.classList.add('btn-danger');
             }
@@ -853,7 +859,7 @@ const populateDeckDropdowns = () => {
                 }
             }
         });
-        
+
         // Đưa ra phản hồi
         if (incorrectSelections === 0 && correctSelections === correctAnswers.size) {
             synonymFeedback.innerHTML = `<p class="text-success fw-bold">Tuyệt vời! Bạn đã chọn đúng tất cả. ✅</p>`;
@@ -863,7 +869,7 @@ const populateDeckDropdowns = () => {
 
         nextSynonymQuestionBtn.classList.remove('hidden');
     };
-    
+
     const endSynonymQuiz = () => {
         synonymQuizSetupDiv.classList.remove('hidden');
         synonymQuizViewDiv.classList.add('hidden');
@@ -924,7 +930,7 @@ const populateDeckDropdowns = () => {
         let failedCount = 0;
         const total = cardsToUpdate.length;
         alert(`Bắt đầu cập nhật cho ${total} thẻ. Vui lòng không đóng tab này cho đến khi có thông báo hoàn thành.`);
-        
+
         // Dùng vòng lặp for...of để xử lý tuần tự, tránh quá tải API
         for (const card of cardsToUpdate) {
             try {
@@ -950,11 +956,11 @@ const populateDeckDropdowns = () => {
                 console.error(`Lỗi khi cập nhật thẻ "${card.front}":`, error);
                 failedCount++;
             }
-            
+
             // Thêm một khoảng nghỉ nhỏ giữa các lần gọi API để tránh bị chặn
             await new Promise(resolve => setTimeout(resolve, 300)); // nghỉ 300ms
         }
-        
+
         alert(`Hoàn thành! \n- ${updatedCount} thẻ được cập nhật thành công. \n- ${failedCount} thẻ gặp lỗi (kiểm tra console để xem chi tiết).`);
     };
 

@@ -192,3 +192,26 @@ header h1 {
         font-size: 1.8rem;
     }
 }
+
+/* === PHẦN 6: RESPONSIVE CHO INPUT GROUP === */
+@media (max-width: 576px) {
+
+    /* Áp dụng cho cả phần Thêm thẻ và Sửa thẻ */
+    #add-card-pane .input-group,
+    #edit-modal .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #add-card-pane .input-group .form-control,
+    #edit-modal .input-group .form-control {
+        border-radius: var(--bs-border-radius) !important;
+    }
+
+    #add-card-pane .input-group .btn,
+    #edit-modal .input-group .btn {
+        width: 100%;
+        margin-top: 8px;
+        border-radius: var(--bs-border-radius) !important;
+    }
+}
