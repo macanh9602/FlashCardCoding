@@ -78,6 +78,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const editExampleInput = document.getElementById('edit-example-input');
     const quizExample = document.getElementById('quiz-example');
 
+// Elements for CSV Import
+    const csvFileInput = document.getElementById('csv-file-input');
+    const importCsvBtn = document.getElementById('import-csv-btn');
+    const importOptionsModal = new bootstrap.Modal(document.getElementById('import-options-modal'));
+    const mergeDataBtn = document.getElementById('merge-data-btn');
+    const replaceDataBtn = document.getElementById('replace-data-btn');
+    const importDeckSelect = document.getElementById('import-deck-select');
+
     // --- AUTH FUNCTIONS ---
     const signOut = () => {
         auth.signOut().catch(error => console.error("Lỗi đăng xuất:", error));
@@ -195,6 +203,16 @@ document.addEventListener('DOMContentLoaded', () => {
             quizDeckFilter.innerHTML += option;
         });
 
+        importDeckSelect.innerHTML = ''; // Xóa các lựa chọn cũ
+        if (decks.length > 0) {
+            deckNames.forEach(name => {
+                const option = `<option value="${name}">${name}</option>`;
+                importDeckSelect.innerHTML += option;
+            });
+        } else {
+            importDeckSelect.innerHTML = '<option value="" disabled>Please create a deck first</option>';
+        }
+
         // --- PHẦN MỚI: Tạo checkboxes cho Luyện tập Từ đồng nghĩa ---
         synonymDeckCheckboxes.innerHTML = '';
         if (decks.length > 0) {
@@ -255,6 +273,91 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- EVENT LISTENERS (CRUD) ---
+        // --- CSV IMPORT LOGIC ---
+    let parsedCsvData = [];
+
+    const processImport = async (strategy) => {
+        importOptionsModal.hide();
+        const destinationDeck = importDeckSelect.value;
+        if (!destinationDeck) return alert('No destination deck selected.');
+        if (parsedCsvData.length === 0) return alert('No data to import.');
+
+        if (strategy === 'replace') {
+            if (!confirm('DANGER: This will delete ALL your current cards and decks. Are you absolutely sure?')) {
+                return;
+            }
+            try {
+                const deletePromises = cards.map(card => cardsRef.doc(card.id).delete());
+                const deleteDeckPromises = decks.map(deck => decksRef.doc(deck.id).delete());
+                await Promise.all([...deletePromises, ...deleteDeckPromises]);
+                alert('All old data has been deleted. Starting import...');
+            } catch (error) {
+                console.error("Error deleting old data:", error);
+                alert('Failed to delete old data. Aborting import.');
+                return;
+            }
+        }
+
+    //         console.log('Parsed CSV rows count:', parsedCsvData.length);
+    // if (parsedCsvData.length > 0) {
+    //     console.log('Sample row (raw):', parsedCsvData[0]);
+    //     console.log('Sample row keys:', Object.keys(parsedCsvData[0]));
+    //     alert(`Debug: Parsed ${parsedCsvData.length} rows. Sample keys: ${Object.keys(parsedCsvData[0]).join(', ')}`);
+    // } else {
+    //     alert('Debug: Parsed 0 rows from CSV. Please check the file or parsing options.');
+    // }
+
+        let importCount = 0;
+        for (const row of parsedCsvData) {
+            if (!row[0] || !row[2]) continue; // Bỏ qua dòng thiếu dữ liệu cần thiết
+
+            const card = {
+                front: row[0].trim().toLowerCase(), // Word là cột đầu tiên (chỉ số 0)
+                back: row[2].trim(),                 // Meaning là cột thứ ba (chỉ số 2)
+                deck: destinationDeck,
+                ipa: row[1] ? row[1].trim() : '',
+                status: 'chua-thuoc',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                example_en: '',
+                example_vi: '',
+                synonyms: []
+            };
+
+            await cardsRef.add(card);
+            importCount++;
+        }
+
+        alert(`Import successful! ${importCount} new cards have been added to the deck "${destinationDeck}".`);
+        parsedCsvData = [];
+        csvFileInput.value = '';
+    };
+
+    importCsvBtn.addEventListener('click', () => {
+        const file = csvFileInput.files[0];
+        if (!importDeckSelect.value) {
+            return alert('Please select a destination deck first!');
+        }
+        if (!file) {
+            return alert('Please select a CSV file first.');
+        }
+
+        Papa.parse(file, {
+            header: false, // Đọc dòng đầu tiên làm tên cột
+            skipEmptyLines: true,
+            complete: (results) => {
+                parsedCsvData = results.data;
+                importOptionsModal.show(); // Hiển thị modal chọn Merge/Replace
+            },
+            error: (error) => {
+                alert('An error occurred while parsing the CSV file.');
+                console.error("CSV Parse Error:", error);
+            }
+        });
+    });
+
+    mergeDataBtn.addEventListener('click', () => processImport('merge'));
+    replaceDataBtn.addEventListener('click', () => processImport('replace'));
+
     addDeckBtn.addEventListener('click', () => {
         const newDeckName = newDeckInput.value.trim();
         if (newDeckName && !decks.some(d => d.name === newDeckName)) {
@@ -658,74 +761,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // const displaySynonymQuestion = () => {
-    //     // Reset
-    //     synonymOptionsContainer.innerHTML = '';
-    //     synonymFeedback.innerHTML = '';
-    //     nextSynonymQuestionBtn.classList.add('hidden');
-
-    //     const currentCard = currentSynonymQuiz[currentSynonymQuestionIndex];
-    //     synonymQuestionWord.textContent = currentCard.front;
-    //     synonymQuizProgress.textContent = `Question ${currentSynonymQuestionIndex + 1} / ${currentSynonymQuiz.length}`;
-
-    //     // --- Logic tạo câu hỏi trắc nghiệm ---
-    //     // 1. Lấy một đáp án đúng
-    //     correctSynonymAnswer = currentCard.synonyms[Math.floor(Math.random() * currentCard.synonyms.length)];
-
-    //     // 2. Lấy 3 đáp án sai (distractors)
-    //     const allOtherSynonyms = cards
-    //         .filter(c => c.id !== currentCard.id && c.synonyms && c.synonyms.length > 0)
-    //         .flatMap(c => c.synonyms);
-    //     const uniqueDistractors = [...new Set(allOtherSynonyms)]
-    //         .filter(s => !currentCard.synonyms.includes(s)); // Loại bỏ các từ đồng nghĩa của câu hỏi hiện tại
-
-    //     const distractors = [];
-    //     for (let i = 0; i < 3; i++) {
-    //         if (uniqueDistractors.length > 0) {
-    //             const randomIndex = Math.floor(Math.random() * uniqueDistractors.length);
-    //             distractors.push(uniqueDistractors.splice(randomIndex, 1)[0]);
-    //         }
-    //     }
-
-    //     // 3. Gộp và xáo trộn các lựa chọn
-    //     const options = [...distractors, correctSynonymAnswer];
-    //     options.sort(() => Math.random() - 0.5);
-
-    //     // 4. Hiển thị các lựa chọn
-    //     options.forEach(option => {
-    //         const button = document.createElement('button');
-    //         button.type = 'button';
-    //         button.className = 'btn btn-outline-primary';
-    //         button.textContent = option;
-    //         synonymOptionsContainer.appendChild(button);
-    //     });
-    // };
-
-    // const checkSynonymAnswer = (selectedAnswer) => {
-    //     // Vô hiệu hóa các nút lựa chọn
-    //     Array.from(synonymOptionsContainer.children).forEach(button => {
-    //         button.disabled = true;
-    //         if (button.textContent === correctSynonymAnswer) {
-    //             button.classList.remove('btn-outline-primary');
-    //             button.classList.add('btn-success'); // Tô màu xanh cho đáp án đúng
-    //         }
-    //     });
-
-    //     if (selectedAnswer === correctSynonymAnswer) {
-    //         synonymFeedback.innerHTML = `<p class="text-success fw-bold">Chính xác! 🎉</p>`;
-    //     } else {
-    //         synonymFeedback.innerHTML = `<p class="text-danger fw-bold">Không đúng. Đáp án đúng là "${correctSynonymAnswer}".</p>`;
-    //         // Tô màu đỏ cho đáp án sai đã chọn
-    //         const selectedBtn = Array.from(synonymOptionsContainer.children).find(b => b.textContent === selectedAnswer);
-    //         if(selectedBtn) {
-    //             selectedBtn.classList.remove('btn-outline-primary');
-    //             selectedBtn.classList.add('btn-danger');
-    //         }
-    //     }
-
-    //     nextSynonymQuestionBtn.classList.remove('hidden');
-    // };
-
     const displaySynonymQuestion_Easy = () => {
         // Reset UI
         synonymOptionsContainer.innerHTML = '';
@@ -966,4 +1001,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gán sự kiện cho nút
     batchUpdateSynonymsBtn.addEventListener('click', batchUpdateSynonyms);
+
 });
